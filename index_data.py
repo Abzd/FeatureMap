@@ -29,7 +29,7 @@ class IndexProcessor:
                     data_all.append(temp)
                     if file == 'Close.pkl':
                         # 1 day change
-                        y_mat = (temp.shift(self.predict_days) - temp > 0).astype(int)
+                        y_mat = (temp.shift(-self.predict_days) - temp > 0).astype(int)
         
         n_days, n_index = data_all[0].shape
         data_mat = np.zeros((n_days, self.n_features, n_index))
@@ -89,3 +89,8 @@ class IndexProcessor:
         #     data[idx] = (item - np.min(item, axis=1).reshape((5, 1))) / (np.max(item, axis=1) - np.min(item, axis=1)).reshape((5, 1))
         return np.expand_dims(data, axis=1)
         
+
+if __name__ == "__main__":
+    with open('data/factoradj/Close.pkl', 'rb') as f:
+        data = pickle.load(f)
+        print(data)

@@ -19,14 +19,14 @@ class DataProcessor():
         self.pred_interval = 10
 
         self.features = ['open', 'high', 'low', 'close', 'volume']
-        self.coins = ['TA888', 'V888', 'RU888', 'RB888', 'C888', 'FU888', 'J888', 'L888']
+        self.futures = ['I888', 'J888', 'JM888', 'BU888', 'SM888', 'SF888', 'RB888', 'TC888', 'HC888']
 
-        self.Database = 'Data.db'
+        self.Database = 'Data_hf.db'
     
     def get_data(self, start_datetime, end_datetime):
-        # [feature, datetime, coin]
+        # [feature, datetime, future]
         n_features = len(self.features)
-        n_coins = len(self.coins)
+        n_futures = len(self.futures)
         data_dict = {}
 
         start = self.parse_datetime(start_datetime)
@@ -35,18 +35,18 @@ class DataProcessor():
         with sqlite3.connect(self.Database) as connection:
             cursor = connection.cursor()
             
-            for coin in self.coins:
+            for future in self.futures:
                 temp = pd.read_sql_query(f"""
                                         SELECT date AS date_norm, open, high, low, close, volume
                                         FROM History
                                         WHERE date >= ?
                                         AND date <= ?
-                                        AND coin == ?
-                                        """, connection, params=[start, end] + [coin],
+                                        AND future == ?
+                                        """, connection, params=[start, end] + [future],
                                         parse_dates=['date_norm'], index_col='date_norm')\
                                         .sort_values(['date_norm'])
                 
-                data_dict[coin] = temp
+                data_dict[future] = temp
 
         print("The keys of data_dict : ", data_dict.keys())
 
@@ -85,9 +85,9 @@ class DataProcessor():
         y_mat = np.zeros((n,))
  
         idx = 0
-        for coin in self.coins:
-            print(coin, "spliting...")
-            temp = data_dict[coin]
+        for future in self.futures:
+            print(future, "spliting...")
+            temp = data_dict[future]
             for i in range(self.train_window - 1, temp.shape[0] - 10):
                 data_mat[idx, :, :] = temp.iloc[i - (self.train_window - 1):i + 1, 0:5]
                 y_mat[idx] = temp.iloc[i, -1]

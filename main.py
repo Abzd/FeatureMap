@@ -45,14 +45,14 @@ def test_loop(dataloader, model, loss_fn):
 
 
 if __name__ == "__main__":
-    train_start = '2012-01-01 01:30:00'
-    train_end = '2018-07-01 15:00:00'
+    train_start = '2015-01-01 01:30:00'
+    train_end = '2019-03-01 15:00:00'
 
-    cv_start = '2018-07-02 01:30:00'
-    cv_end = '2019-07-01 15:00:00'
+    cv_start = '2019-03-02 01:30:00'
+    cv_end = '2019-12-01 15:00:00'
 
-    test_start = '2019-07-02 01:30:00'
-    test_end = '2021-03-05 15:00:00'
+    test_start = '2019-12-02 01:30:00'
+    test_end = '2021-04-20 15:00:00'
 
     data_processor = DataProcessor()
     train_loader = data_processor.get_data(train_start, train_end)

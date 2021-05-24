@@ -11,14 +11,15 @@ from pyts.image import GramianAngularField
 
 
 class Backtest:
-    def __init__(self, future_id='TA888', start_datetime='2019-07-02 01:30:00', end_datetime='2021-03-05 15:00:00'):
+    def __init__(self, future_id='RB888', start_datetime='2019-07-02 01:30:00', end_datetime='2021-03-05 15:00:00'):
         self.future_id = future_id
         self.start_datetime = start_datetime
         self.end_datetime = end_datetime
         self.window = 30
 
-        self.model = torch.load('model.pkl')
-        self.Database = 'Data.db'
+        model = 'models/model_' + future_id + '.pkl'
+        self.model = torch.load(model)
+        self.Database = 'Data_hf.db'
 
         self.df = self.get_data()
 
@@ -34,7 +35,7 @@ class Backtest:
                                    FROM History
                                    WHERE date >= ?
                                    AND date <= ?
-                                   AND coin == ?
+                                   AND future == ?
                                    """, connection, params=[start, end] + [self.future_id],
                                    parse_dates=['date_norm'], index_col='date_norm')\
                                    .sort_values(['date_norm'])
@@ -58,20 +59,20 @@ class Backtest:
 
                 open_time = time_idx
 
-            elif hold == 0 and not signal:
-                hold = -1
+            # if hold == 0 and not signal:
+            #     hold = -1
 
-                open_time = time_idx
+            #     open_time = time_idx
 
-            elif hold == 1 and (not signal or time_idx - open_time == 10):
+            elif hold == 1 and time_idx - open_time == 10:
                 hold = 0
 
-                profit.append(+(df['close'].iloc[time_idx] - df['close'].iloc[open_time]))
+                profit.append(+(df['close'].iloc[time_idx] * 0.0097 - df['close'].iloc[open_time]))
 
-            elif hold == -1 and (signal or time_idx - open_time == 10):
-                hold = 0
+            # elif hold == -1 and time_idx - open_time == 10:
+            #     hold = 0
                 
-                profit.append(-(df['close'].iloc[time_idx] - df['close'].iloc[open_time]))
+            #     profit.append(-(df['close'].iloc[time_idx] - df['close'].iloc[open_time]))
 
         return np.array(profit)
 
@@ -83,7 +84,6 @@ class Backtest:
         pred = F.softmax(self.model(torch.tensor(image)), dim=1).detach().numpy()
         
         signal = np.argmax(pred)
-        print(signal)
 
         return signal
         
@@ -99,12 +99,15 @@ class Backtest:
 
 
 if __name__ == "__main__":
-    futures = ['TA888', 'V888', 'RU888', 'RB888', 'C888', 'FU888', 'J888', 'L888']
-    
-    for future in futures:
+    black_future = ['I888']
+
+    for future in black_future:
         backtest = Backtest(future_id=future)
         
         profit = backtest.run(backtest.df)
         print(len(profit))
+        print('Total: ', profit.cumsum()[-1])
+        print('Sharpe: ', np.mean(profit) / np.std(profit))
+        
         backtest.plot_profit(profit)
 

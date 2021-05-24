@@ -42,3 +42,13 @@ class CNN(nn.Module):
         x = self.fc(x)
         return x
 
+
+if __name__ == "__main__":
+    model = CNN('GAF')
+    
+    # print('---Layers---')
+    # print(model.layers)
+
+    print('---Model---')
+    print(model)
+
